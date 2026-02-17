@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cole's Pizza Dough Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --black: #111111; --white: #ffffff; --gray-100: #f5f5f5; --gray-200: #e8e8e8; --gray-400: #999999; --gray-600: #555555; }
+    body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--black); min-height: 100vh; }
+
+    nav { border-bottom: 1.5px solid var(--black); padding: 0 40px; display: flex; align-items: center; justify-content: center; height: 64px; }
+    .nav-logo { font-size: 18px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none; color: var(--black); }
+
+    main { max-width: 720px; margin: 0 auto; padding: 60px 24px 80px; }
+    h1 { font-size: 13px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; text-align: center; margin-bottom: 48px; }
+
+    .card { background: var(--gray-100); border-radius: 4px; padding: 36px 40px; margin-bottom: 24px; }
+
+    .input-row { margin-bottom: 28px; }
+    .input-row-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .input-row-label { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+    .input-row-value { font-size: 22px; font-weight: 800; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: var(--gray-200); border-radius: 2px; outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--black); cursor: pointer; border: 3px solid var(--white); box-shadow: 0 0 0 1.5px var(--black); }
+    input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--black); border: 3px solid var(--white); box-shadow: 0 0 0 1.5px var(--black); }
+
+    .thickness-group { display: flex; border: 1.5px solid var(--black); border-radius: 4px; overflow: hidden; }
+    .thickness-btn { flex: 1; padding: 12px 0; background: var(--white); border: none; border-right: 1.5px solid var(--black); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .thickness-btn:last-child { border-right: none; }
+    .thickness-btn.active { background: var(--black); color: var(--white); }
+    .thickness-btn:hover:not(.active) { background: var(--gray-200); }
+
+    .results-card { background: var(--black); color: var(--white); border-radius: 4px; padding: 36px 40px; margin-bottom: 24px; }
+    .results-title { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 28px; color: var(--gray-400); }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #2a2a2a; }
+    .result-left { display: flex; flex-direction: column; gap: 3px; }
+    .result-name { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .result-pct { font-size: 11px; color: var(--gray-400); }
+    .result-right { display: flex; align-items: baseline; gap: 4px; }
+    .result-amount { font-size: 24px; font-weight: 800; }
+    .result-unit { font-size: 13px; color: var(--gray-400); }
+
+    .total-row { margin-top: 20px; padding-top: 20px; border-top: 2px solid #333; display: flex; justify-content: space-between; align-items: baseline; }
+    .total-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray-400); }
+    .total-right { display: flex; align-items: baseline; gap: 4px; }
+    .total-amount { font-size: 28px; font-weight: 900; }
+
+    .ball-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: baseline; }
+    .ball-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray-400); }
+    .ball-right { display: flex; align-items: baseline; gap: 4px; }
+    .ball-amount { font-size: 22px; font-weight: 800; color: #cccccc; }
+
+    .instructions-toggle { background: none; border: 1.5px solid var(--black); border-radius: 4px; width: 100%; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .instructions-toggle:hover { background: var(--gray-100); }
+    .chevron { transition: transform 0.2s; }
+    .chevron.open { transform: rotate(180deg); }
+    .instructions-body { display: none; background: var(--gray-100); border: 1.5px solid var(--black); border-top: none; border-radius: 0 0 4px 4px; padding: 28px 32px; }
+    .instructions-body.open { display: block; }
+    .instructions-body h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 20px; }
+    .instructions-body ol { list-style: none; counter-reset: step; }
+    .instructions-body li { counter-increment: step; display: flex; gap: 14px; margin-bottom: 14px; font-size: 14px; line-height: 1.55; color: var(--gray-600); }
+    .instructions-body li::before { content: counter(step); min-width: 24px; height: 24px; background: var(--black); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+
+    footer { border-top: 1.5px solid var(--black); padding: 28px 40px; text-align: center; font-size: 11px; color: var(--gray-400); }
+    @media (max-width: 600px) { nav { padding: 0 20px; } main { padding: 40px 16px 60px; } .card, .results-card { padding: 24px 20px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">Cole's Pizza Dough Calculator</a>
+</nav>
+
+<main>
+  <h1>Cole's Pizza Dough Calculator</h1>
+
+  <div class="card">
+    <div class="input-row">
+      <div class="input-row-header">
+        <span class="input-row-label">Pizza Size (inches)</span>
+        <span class="input-row-value" id="sizeVal">12</span>
+      </div>
+      <input type="range" id="sizeRange" min="8" max="20" step="1" value="12" oninput="updateSize()" />
+    </div>
+    <div class="input-row">
+      <div class="input-row-header">
+        <span class="input-row-label">Number of Pizzas</span>
+        <span class="input-row-value" id="countVal">4</span>
+      </div>
+      <input type="range" id="countRange" min="1" max="20" step="1" value="4" oninput="updateCount()" />
+    </div>
+    <div class="input-row" style="margin-bottom:0">
+      <div class="input-row-header" style="margin-bottom:14px;"><span class="input-row-label">Pizza Thickness</span></div>
+      <div class="thickness-group">
+        <button class="thickness-btn" data-t="thin" onclick="setThickness('thin')">Thin</button>
+        <button class="thickness-btn active" data-t="regular" onclick="setThickness('regular')">Regular</button>
+        <button class="thickness-btn" data-t="thick" onclick="setThickness('thick')">Thick</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-card">
+    <div class="results-title">Ingredients</div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Bread Flour</span><span class="result-pct">100%</span></div>
+      <div class="result-right"><span class="result-amount" id="flourAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Water</span><span class="result-pct" id="waterPct">—</span></div>
+      <div class="result-right"><span class="result-amount" id="waterAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Yeast</span><span class="result-pct" id="yeastPct">—</span></div>
+      <div class="result-right"><span class="result-amount" id="yeastAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Salt</span><span class="result-pct" id="saltPct">—</span></div>
+      <div class="result-right"><span class="result-amount" id="saltAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Sugar</span><span class="result-pct" id="sugarPct">—</span></div>
+      <div class="result-right"><span class="result-amount" id="sugarAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-left"><span class="result-name">Olive Oil</span><span class="result-pct" id="oilPct">—</span></div>
+      <div class="result-right"><span class="result-amount" id="oilAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+
+    <div class="total-row">
+      <span class="total-label">Total Dough</span>
+      <div class="total-right"><span class="total-amount" id="totalAmt">—</span><span class="result-unit">g</span></div>
+    </div>
+    <div class="ball-row">
+      <span class="ball-label">Dough Ball Weight</span>
+      <div class="ball-right"><span class="ball-amount" id="ballAmt">—</span><span class="result-unit">g each</span></div>
+    </div>
+  </div>
+
+  <button class="instructions-toggle" onclick="toggleInstructions()">
+    <span id="instrLabel">Show Instructions</span>
+    <span class="chevron" id="chevron">▾</span>
+  </button>
+  <div class="instructions-body" id="instrBody">
+    <h3>Dough Making Instructions</h3>
+    <ol>
+      <li>Cool water to below 60°F.</li>
+      <li>Mix the water and yeast until fully dissolved.</li>
+      <li>Add flour and Olive Oil and mix for 2 minutes.</li>
+      <li>Keep mixing on low speed, then add Sugar and Salt.</li>
+      <li>Mix for 10 more minutes until dough is smooth and elastic.</li>
+      <li>Cover the dough with plastic wrap and rest for 1–3 hours.</li>
+      <li>Divide the dough into equal portions.</li>
+      <li>Shape into balls, sealing the seam tightly on the bottom.</li>
+      <li>Place dough balls in lightly oiled containers.</li>
+      <li>Cover tightly and refrigerate for 2–4 days. 3 days is ideal.</li>
+      <li>Let the dough come to room temperature before using (1–2 hours).</li>
+    </ol>
+  </div>
+</main>
+
+<footer>© 2026 Cole's Pizza Dough Calculator</footer>
+
+<script>
+  const RECIPES = {
+    regular: { water: 62,  yeast: 0.4,  salt: 2.5, sugar: 2.0, oil: 3.3 },
+    thin:    { water: 58,  yeast: 0.35, salt: 2.5, sugar: 1.5, oil: 3.0 },
+    thick:   { water: 65,  yeast: 0.45, salt: 2.5, sugar: 2.5, oil: 3.5 },
+  };
+  const DENSITY = { thin: 1.91, regular: 2.388, thick: 2.985 };
+
+  let thickness = 'regular';
+
+  function updateSize()  { document.getElementById('sizeVal').textContent  = document.getElementById('sizeRange').value;  calculate(); }
+  function updateCount() { document.getElementById('countVal').textContent = document.getElementById('countRange').value; calculate(); }
+
+  function setThickness(t) {
+    thickness = t;
+    document.querySelectorAll('.thickness-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+    calculate();
+  }
+
+  function calculate() {
+    const size   = parseFloat(document.getElementById('sizeRange').value);
+    const count  = parseInt(document.getElementById('countRange').value);
+    const recipe = RECIPES[thickness];
+
+    const area         = Math.PI * (size / 2) ** 2;
+    const doughPerBall = area * DENSITY[thickness];
+    const totalDough   = doughPerBall * count;
+
+    const denom = 1 + recipe.water/100 + recipe.yeast/100 + recipe.salt/100 + recipe.sugar/100 + recipe.oil/100;
+    const flour = totalDough / denom;
+    const water = flour * recipe.water / 100;
+    const yeast = flour * recipe.yeast / 100;
+    const salt  = flour * recipe.salt  / 100;
+    const sugar = flour * recipe.sugar / 100;
+    const oil   = flour * recipe.oil   / 100;
+
+    const r  = v => Math.round(v * 10) / 10;
+    const ri = v => Math.round(v);
+    const total = flour + water + yeast + salt + sugar + oil;
+
+    document.getElementById('flourAmt').textContent = ri(flour);
+    document.getElementById('waterAmt').textContent = ri(water);
+    document.getElementById('yeastAmt').textContent = r(yeast);
+    document.getElementById('saltAmt').textContent  = ri(salt);
+    document.getElementById('sugarAmt').textContent = ri(sugar);
+    document.getElementById('oilAmt').textContent   = ri(oil);
+    document.getElementById('totalAmt').textContent = ri(total);
+    document.getElementById('ballAmt').textContent  = ri(total / count);
+
+    document.getElementById('waterPct').textContent = recipe.water + '%';
+    document.getElementById('yeastPct').textContent = recipe.yeast + '%';
+    document.getElementById('saltPct').textContent  = recipe.salt  + '%';
+    document.getElementById('sugarPct').textContent = recipe.sugar + '%';
+    document.getElementById('oilPct').textContent   = recipe.oil   + '%';
+  }
+
+  function toggleInstructions() {
+    const body   = document.getElementById('instrBody');
+    const isOpen = body.classList.toggle('open');
+    document.getElementById('chevron').classList.toggle('open', isOpen);
+    document.getElementById('instrLabel').textContent = isOpen ? 'Hide Instructions' : 'Show Instructions';
+  }
+
+  calculate();
+</script>
+</body>
+</html>
